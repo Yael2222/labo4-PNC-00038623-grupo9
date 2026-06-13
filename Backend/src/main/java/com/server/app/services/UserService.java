@@ -1,0 +1,106 @@
+package com.server.app.services;
+
+import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.server.app.dto.user.UserCreateDto;
+import com.server.app.dto.user.UserUpdateDto;
+import com.server.app.entities.Role;
+import com.server.app.entities.User;
+import com.server.app.exceptions.ConfictException;
+import com.server.app.exceptions.NotFoundException;
+import com.server.app.repositories.RoleRepository;
+import com.server.app.repositories.UserRepository;
+
+@Service
+@AllArgsConstructor
+public class UserService {
+
+    private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+
+    @Transactional
+    public User create(UserCreateDto dto) {
+        uniqueUsername(dto.getUsername(), null);
+        uniqueEmail(dto.getEmail(), null);
+        User user = new User();
+        user.setUsername(dto.getUsername());
+        user.setName(dto.getName());
+        user.setSurname(dto.getSurname());
+        user.setEmail(dto.getEmail());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+
+        if (dto.getRole() != null) {
+            Role role = roleRepository.findById(dto.getRole())
+                    .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+            user.setRole(role);
+        }
+
+        return userRepository.save(user);
+    }
+
+    public Page<User> findAll(int page, int size, String search) {
+        return userRepository.findAll(PageRequest.of(page, size), search);
+    }
+    private final PasswordEncoder encoder;
+    public User update(Integer id, UserUpdateDto dto){
+
+        User user = findById(id);
+
+        if(dto.getUsername()!=null){
+            user.setUsername(dto.getUsername());
+        }
+
+        if(dto.getName()!=null){
+            user.setName(dto.getName());
+        }
+
+        if(dto.getSurname()!=null){
+            user.setSurname(dto.getSurname());
+        }
+
+        if(dto.getEmail()!=null){
+            user.setEmail(dto.getEmail());
+        }
+
+        if(dto.getPassword()!=null &&
+                !dto.getPassword().isBlank()){
+
+            user.setPassword(
+                    encoder.encode(
+                            dto.getPassword()
+                    )
+            );
+        }
+
+        return userRepository.save(user);
+    }
+
+    private void uniqueUsername(String username, Integer id) {
+        userRepository.findUserByUsername(username).ifPresent(existing -> {
+            if (id == null || existing.getId() != id) {
+                throw new ConfictException("El nombre de usuario ya está en uso");
+            }
+        });
+    }
+
+    private void uniqueEmail(String email, Integer id) {
+        userRepository.findUserByEmail(email).ifPresent(existing -> {
+            if (id == null || existing.getId() != id) {
+                throw new ConfictException("El correo electrónico ya está en uso");
+            }
+        });
+    }
+    @Transactional(readOnly = true)
+    public User findById(Integer id) {
+        return userRepository.findById(id)
+                .orElseThrow(() ->
+                        new NotFoundException("Usuario no encontrado"));
+    }
+
+}
