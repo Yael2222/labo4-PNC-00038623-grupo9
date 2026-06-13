@@ -50,15 +50,6 @@ public class AuthController {
 
         User user = (User) principal;
 
-        Map<String, Object> profile = new HashMap<>();
-        profile.put("id", user.getId());
-        profile.put("username", user.getUsername());
-        profile.put("email", user.getEmail());
-        profile.put("name", user.getName());
-        profile.put("surname", user.getSurname());
-        profile.put("role", user.getRole().getName());
-        profile.put("blocked", user.isBlocked());
-
-        return ResponseEntity.ok(profile);
+        return ResponseEntity.ok(user);
     }
 }

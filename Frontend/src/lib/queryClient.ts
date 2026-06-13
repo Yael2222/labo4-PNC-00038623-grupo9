@@ -19,4 +19,5 @@ export const queryKeys = {
   cuentas: ['cuentas'],
   categorias: ['categorias'],
   movimientos: ['movimientos'],
+  transferencias: ['transferencias'],
 }

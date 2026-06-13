@@ -4,6 +4,7 @@ import com.server.app.config.SecurityRules;
 import com.server.app.services.PermissionService;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
@@ -12,6 +13,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
+@Order(1)
 public class SaveEndpoints implements ApplicationListener<ApplicationReadyEvent> {
 
     private final RequestMappingHandlerMapping handlerMapping;

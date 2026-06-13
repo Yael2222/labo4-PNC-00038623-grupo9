@@ -27,12 +27,11 @@ export default function OutletContainer({
   const { profile: user, loading } = useSession()
   const location = useLocation()
 
-  const role = user?.role?.name
   const pathname = location.pathname as RoutesEnum
 
   const findRoute = routesConfig[pathname]
 
-  const allowed = role && isAuthorized(role, pathname)
+  const allowed = isAuthorized(user?.role?.permissions, pathname)
 
   const pageInfo = useMemo(() => {
     const routeData = routesConfig[pathname]
@@ -62,8 +61,7 @@ export default function OutletContainer({
 
   if (!findRoute.auth) return children
 
-  console.log({ allowed, user })
-  //if (!allowed) return <ForbiddenView />
+  if (!allowed) return <ForbiddenView />
 
   return (
     <>

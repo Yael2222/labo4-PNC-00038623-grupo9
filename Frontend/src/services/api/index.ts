@@ -8,10 +8,11 @@ import UserService from './custom/UserService'
 import cuentaService from './custom/CuentaService'
 import categoriaService from './custom/CategoriaService'
 import movimientoService from './custom/MovimientoService'
+import transferenciaService from './custom/TransferenciaService'
 
 export const userService = new UserService()
 
-export { cuentaService, categoriaService, movimientoService }
+export { cuentaService, categoriaService, movimientoService, transferenciaService }
 
 export const roleService = new Service<Role>({
   endpoint: 'roles',

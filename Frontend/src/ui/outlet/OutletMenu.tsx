@@ -4,6 +4,8 @@ import type { RoleName } from '@/enum/role'
 import useRecoilStorage from '@/hooks/core/useRecoilStorage'
 import { useSession } from '@/hooks/useSession'
 import type { MenuItem, SubMenuItem } from '@/models/app/menu'
+import type Permissions from '@/models/api/entities/Permissions'
+import { isAuthorized } from '@/utils/permission.app'
 import {
   CloseOutlined,
   LeftOutlined,
@@ -49,26 +51,28 @@ export default function OutletMenu({
     (
       menu: MenuItem[],
       role: RoleName,
-      collapsed: boolean
+      collapsed: boolean,
+      permissions: Permissions[] | undefined
     ): MenuProps['items'] => {
+      const roleAllows = (authorized: RoleName[]) =>
+        authorized.includes(role) || authorized.includes('*')
+
       return menu
         .filter(
           (item) =>
-            item.authorized.includes(role) ||
-            item.authorized.includes('*') ||
+            (roleAllows(item.authorized) &&
+              isAuthorized(permissions, item.key)) ||
             item.children.some(
               (c) =>
-                c.authorized.includes(role) ||
-                c.authorized.includes('*') ||
+                roleAllows(c.authorized) &&
+                isAuthorized(permissions, c.key) &&
                 c.view
             )
         )
         .map((item) => {
           const children = item.children
             .filter(
-              (c) =>
-                c.authorized.includes(role) ||
-                (c.authorized.includes('*') && c.view)
+              (c) => roleAllows(c.authorized) && isAuthorized(permissions, c.key)
             )
             .map((c: SubMenuItem) => ({
               key: c.key,
@@ -100,8 +104,9 @@ export default function OutletMenu({
   const location = useLocation()
 
   const filteredMenuItems = useMemo(
-    () => buildMenuItemsForAntd(menu, role!, collapsed) ?? [],
-    [buildMenuItemsForAntd, role, collapsed]
+    () =>
+      buildMenuItemsForAntd(menu, role!, collapsed, profile?.role?.permissions) ?? [],
+    [buildMenuItemsForAntd, role, collapsed, profile?.role?.permissions]
   )
 
   const menuKey = useMemo(() => {

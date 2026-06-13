@@ -3,10 +3,13 @@ package com.server.app.controllers;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.server.app.dto.movimiento.MovimientoDto;
+import com.server.app.dto.response.Pagination;
+import com.server.app.dto.response.PaginationMeta;
 import com.server.app.services.MovimientoService;
 
 @RestController
@@ -29,10 +32,20 @@ public class MovimientoController {
 
     ) {
 
+        Page<?> result = service.findAll(
+                page,
+                size
+        );
+
         return ResponseEntity.ok(
-                service.findAll(
-                        page,
-                        size
+                new Pagination<>(
+                        result.getContent(),
+                        new PaginationMeta(
+                                result.getNumber(),
+                                result.getSize(),
+                                result.getTotalPages(),
+                                result.getTotalElements()
+                        )
                 )
         );
 
